@@ -23,12 +23,7 @@ function gofasiuguboleto_config(){
 		require_once __DIR__.'/functions.php';
 		$verify_install = gib_verify_install();
 		$whmcs_url = gib_whmcs_url();
-		$check_updates = gib_verify_module_updates($module_page,$whmcs_url['url'],$module_version);
-		//$embed = gib_get_embed('14942',$whmcs_url['url'],$module_version);
-		$tbladmins = gib_tbladmins();
-		//$tblticketdepartments = gib_tblticketdepartments();
-		//echo '<pre>',print_r($check_updates),'</pre>';
-		
+		$check_updates = gib_verify_module_updates($module_page,$whmcs_url['admin_url'],$module_version);		
 		$opt_num = 1;
 		$renderize = array(
 			'FriendlyName' => array(
@@ -44,47 +39,33 @@ function gofasiuguboleto_config(){
 					<div style="margin-left: 10px;">
 						<h4 style="padding-top: 5px;">Módulo Gofas iugu - Boleto para WHMCS v'.$module_version.'</h4>
 						'.$check_updates['message'].'
-						<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14942#configuration">Documentação do módulo</a> | <a style="text-decoration:underline;" target="_blank" href="https://docs.iugu.com.br/">Documentação da API iugu</a></p>
-						<p>Crie um <a style="text-decoration:underline;" target="_blank" href="'.$whmcs_url['admin_url'].'/configcustomfields.php">campo personalizado de cliente</a> para CPF e/ou CNPJ, ou se preferir, crie dois campos distintos, um campo apenas para CPF e outro campo para CNPJ. O módulo identifica os campos do perfil do cliente automaticamente.</p>
+						<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14942#configuration">Documentação do módulo</a> | <a style="text-decoration:underline;" target="_blank" href="https://dev.iugu.com/reference/metadados/">Documentação da API iugu</a></p>
 					</div>
 				</div>',
 			),
-			'separator_2' => array(
-				'Description' => '<h2>Credenciais Live (produção)</h2>',
-			),
-			'account_id' => array(
-				'FriendlyName' => $opt_num++.'- ID da conta<span class="gib_required">*</span>',
+			/*'account_id' => array(
+				'FriendlyName' => $opt_num++.'- ID da conta iugu<span class="gib_required">*</span>',
 				'Type' => 'text',
 				'Size' => '50',
 				'Default' => '',
-				'Description' => '<span class="gib_required_txt">(Obrigatório)</span> ID da conta | Produção. <a target="_blank" style="text-decoration:underline;" href="https://alia.iugu.com/settings/account/general_information">Obter ID</a>',
-			),
+				'Description' => '<a target="_blank" style="text-decoration:underline;" href="https://alia.iugu.com/settings/account/general_information">Obter ID da conta</a> - <a target="_blank" style="text-decoration:underline;" href="https://s3.amazonaws.com/uploads.gofas.me/wp-content/uploads/2023/03/iugu_id_da_conta.png">veja onde encontrar</a>.',
+			),*/
 			'api_token' => array(
-				'FriendlyName' => $opt_num++.'- API Token<span class="gib_required">*</span>',
-				'Type' => 'text',
+				'FriendlyName' => $opt_num++.'- API token produção<span class="gib_required">*</span>',
+				'Type' => 'password',
 				'Size' => '50',
 				'Default' => '',
-				'Description' => '<span class="gib_required_txt">(Obrigatório)</span> Token API | Produção. <a target="_blank" style="text-decoration:underline;" href="https://alia.iugu.com/settings/account/api_integration">Obter token</a>',
-			),
-			'separator_3' => array(
-				'Description' => '<h2>Credenciais Sandbox (teste)</h2>',
-			),
-			'sandbox_account_id' => array(
-				'FriendlyName' => $opt_num++.'- ID da conta<span class="gib_required">*</span>',
-				'Type' => 'text',
-				'Size' => '50',
-				'Default' => '',
-				'Description' => '<span class="gib_required_txt">(Obrigatório)</span> ID da conta | Produção. <a target="_blank" style="text-decoration:underline;" href="https://alia.iugu.com/settings/account/general_information">Obter ID</a>',
+				'Description' => '<a target="_blank" style="text-decoration:underline;" href="https://alia.iugu.com/settings/account/api_integration">Obter API token</a>',
 			),
 			'sandbox_api_token' => array(
-				'FriendlyName' => $opt_num++.'- API Token<span class="gib_required">*</span>',
-				'Type' => 'text',
+				'FriendlyName' => $opt_num++.'- API token teste<span class="gib_required">*</span>',
+				'Type' => 'password',
 				'Size' => '50',
 				'Default' => '',
-				'Description' => '<span class="gib_required_txt">(Obrigatório)</span> Token API | Teste. <a target="_blank" style="text-decoration:underline;" href="https://alia.iugu.com/settings/account/api_integration">Obter token</a>',
+				'Description' => '<a target="_blank" style="text-decoration:underline;" href="https://alia.iugu.com/settings/account/api_integration">Obter API token</a>',
 			),
 			'separator_3_1' => array(
-				'Description' => '<span></span>',
+				'Description' => '<span><a target="_blank" style="text-decoration:underline;" href="https://dev.iugu.com/reference/autentica%C3%A7%C3%A3o#criando-suas-chaves-de-api-api-tokens-via-painel">Veja aqui como criar suas chaves de API (API Tokens) via painel iugu</a></span>',
 			),
 			// Sandbox
 			'sandbox' => array(
@@ -106,16 +87,16 @@ function gofasiuguboleto_config(){
 				'Type' => 'text',
 				'Size' => '10',
 				'Default' => '5',
-				'Description' => 'Insira o valor total mínimo da fatura para permitir pagamento via Boleto. Formato: Decimal, separado por ponto. Maior ou igual a sua tarifa (a partir de 2.50) e menor ou igual a 1000000.00.',
+				'Description' => 'Insira o valor total mínimo da fatura para permitir pagamento via Boleto. Formato: Decimal, separado por ponto. Não deve ser menor que o valor da tarifa aplicada à sua conta iugu.',
 			),
-			// fee
-			'fee' => array(
-				'FriendlyName' => $opt_num++.'- Tarifa do Boleto',
-				'Type' => 'text',
-				'Size' => '10',
-				'Default' => '0.99',
-				'Description' => 'Insira o valor da tarifa paga à iugu por cada Boleto recebido. Formato: Decimal, separado por ponto (0.99)',
-			),
+			// Dias + vencimento
+			'diasparavencimento' => array(
+        	    'FriendlyName'      => $opt_num++.'- Dias até o vencimento',
+        	    'Type'              => 'text',
+				'Size'				=> '10',
+				'Default' 			=> '2',
+        	    'Description'       => 'Dias entre a data de emissão e a data do vencimento do boleto quando gerado no dia do vencimento ou após o vencimento da fatura. Boleto gerado antes do vencimento da fatura é emitido com a mesma data de vencimento da fatura. Mínimo 1 máximo 30.',
+        	),
 			// Top billet button message 
 			'message' => array(
 				'FriendlyName' => $opt_num++.'- Mensagem na fatura',
@@ -129,13 +110,6 @@ function gofasiuguboleto_config(){
 				'FriendlyName' => $opt_num++.'- Redirecionar para o Boleto',
 				'Type' => 'yesno',
 				'Description' => 'Redireciona o cliente diretamente para o URL do boleto ao acessar a fatura.',
-			),
-			'admin' => array(
-				'FriendlyName' => $opt_num++.'- Administrador do WHMCS<span class="ggp_required">*</span>',
-				'Type'          => 'dropdown',
-				'Default' 		=> array_shift(array_values($tbladmins)),
-    	        'Options'       => $tbladmins,
-				'Description' => 'Defina o administrador com permissões para utilizar a API interna do WHMCS.',
 			),
 		);
 		$footer = array('footer' => array(

@@ -25,38 +25,35 @@ if(!function_exists('gib_qrcode_mergetags_fields')){
 if(!function_exists('gib_qrcode_mergetags')){
     function gib_qrcode_mergetags($vars){
         $params = getGatewayVariables('gofasiuguboleto');
-	//$boletoonemail					= $params['boletoonemail'];
-	
-	// Invoice Created | Invoice Payment Reminder | First Invoice Overdue Notice |  Second Invoice Overdue Notice |  Third Invoice Overdue Notice 
-    if(
-		$vars['messagename'] === 'Invoice Created' ||
-		$vars['messagename'] === 'Invoice Payment Reminder' ||
-		$vars['messagename'] === 'First Invoice Overdue Notice' ||
-		$vars['messagename'] === 'Second Invoice Overdue Notice' ||
-		$vars['messagename'] === 'Third Invoice Overdue Notice'
-	){
-		$gib_merge_fields	= array();
-		$invoice			= localAPI( 'GetInvoice', array('invoiceid' => $vars['relid']), (int)$params['admin']);
-		if( $invoice['total'] > '0.00' and $invoice['paymentmethod'] === 'gofasiuguboleto'){
-			// Saved Billets
-			$boleto_saved = array();
-			foreach( Capsule::table('gofasiuguboleto') -> where('invoice_id', '=', $vars['relid'])->get(['pdf','bankLine']) as $key => $value ){
-				$boletos_for_invoice[$key] = json_decode(json_encode($value), true);
+	    if(
+			$vars['messagename'] === 'Invoice Created' ||
+			$vars['messagename'] === 'Invoice Payment Reminder' ||
+			$vars['messagename'] === 'First Invoice Overdue Notice' ||
+			$vars['messagename'] === 'Second Invoice Overdue Notice' ||
+			$vars['messagename'] === 'Third Invoice Overdue Notice'
+		){
+			$gib_merge_fields	= array();
+			$invoice			= localAPI( 'GetInvoice', array('invoiceid' => $vars['relid']), (int)(int)gib_setup_admin()['id']);
+			if( $invoice['total'] > '0.00' and $invoice['paymentmethod'] === 'gofasiuguboleto'){
+				// Saved Billets
+				$boleto_saved = array();
+				foreach( Capsule::table('gofasiuguboleto') -> where('invoice_id', '=', $vars['relid'])->get(['pdf','bankLine']) as $key => $value ){
+					$boletos_for_invoice[$key] = json_decode(json_encode($value), true);
+				}
+				$boleto_saved = $boletos_for_invoice['0']; // Array
+				// Merge Fields
+				if (!array_key_exists('gib_pdf', $vars['mergefields'])) {
+					$gib_merge_fields['gib_pdf'] = $boleto_saved['pdf'];
+				}
+				if (!array_key_exists('gib_bankLine', $vars['mergefields'])) {
+					$gib_merge_fields['gib_bankLine'] = $boleto_saved['bankLine'];
+				}
 			}
-			$boleto_saved = $boletos_for_invoice['0']; // Array
-			// Merge Fields
-			$gib_merge_fields['gib_pdf']			= $boleto_saved['pdf'];
-			$gib_merge_fields['gib_bankLine']		= $boleto_saved['bankLine'];			
-			// Debug Log
-			if($params['log']){
-				logModuleCall('gofasiuguboleto','email_boleto',$vars,'',$invoice);
-			}
+    	}
+		if($params['log']){
+			logModuleCall('gofasiuguboleto','email_boleto',$vars,'',$invoice);
 		}
 		return $gib_merge_fields;
-    }
-	else { // Not
-		return;
-	}
     }
 }
 
@@ -79,14 +76,15 @@ function gib_check_status_updates($vars){
 				if((int)$boleto['result_code'] !== 200){
 					$error	.= 'Erro ao verificar Boleto: ' . json_encode($boleto);
 				}
-				if($boleto['result']['Transactions']['0']['status'] === 'payedBoleto' || $boleto['result']['Transactions']['0']['status'] === 'captured') {
+				if($boleto['result']['status'] === 'paid') {
 					$invoices[$tblinvoices->id] = [
 						'invoice_id'=>$tblinvoices->id,
 						'trans_id'=>$local_boleto->charge_id,
-						'transaction_id'=>$local_boleto->id,
+						'transaction_id'=>$local_boleto->charge_id,
 						'total'=>$tblinvoices->total,
 						'user_id'=>$tblinvoices->userid,
-						'paid_amount'=>(float)number_format(($boleto['result']['Transactions']['0']['value']/100), 2,'.',''),
+						'paid_amount'=>(float)number_format(($boleto['result']['total_paid_cents']/100), 2,'.',''),
+						'fee'=>(float)number_format(($boleto['result']['taxes_paid_cents']/100), 2,'.','')
 					];
 				}
 			} // End Foreach
@@ -97,23 +95,23 @@ function gib_check_status_updates($vars){
 				$log['invoice_value'][$value['invoice_id']] = $value;
 				$log['invoice_id'][$value['invoice_id']] = $value['invoice_id'];
 				if ( (float)$value['paid_amount'] > (float)$value['total'] ) {
-					$update_invoice = localAPI('updateinvoice', array( 'invoiceid' => $value['invoice_id'], 'newitemdescription' => array('Acréscimos calculados na emissão do Boleto'),'newitemamount' => array((float)($value['paid_amount'] - $value['total']))), $params['admin'] );
+					$update_invoice = localAPI('updateinvoice', array( 'invoiceid' => $value['invoice_id'], 'newitemdescription' => array('Acréscimos calculados na emissão do Boleto'),'newitemamount' => array((float)($value['paid_amount'] - $value['total']))), (int)gib_setup_admin()['id'] );
 				}
 				// - Billet amount is less than the invoice amount
 				if ( (float)$value['paid_amount'] < (float)$value['total'] ) {
-					$update_invoice = localAPI('updateinvoice', array( 'invoiceid' => $value['invoice_id'], 'newitemdescription' => array('Descontos calculados na emissão do Boleto'),'newitemamount' => array((float)($value['paid_amount'] - $value['total']))), $params['admin'] );
+					$update_invoice = localAPI('updateinvoice', array( 'invoiceid' => $value['invoice_id'], 'newitemdescription' => array('Descontos calculados na emissão do Boleto'),'newitemamount' => array((float)($value['paid_amount'] - $value['total']))), (int)gib_setup_admin()['id'] );
 				}
 				$add_trans = localAPI( 'addtransaction' ,
 					[
 						'userid'=>$value['user_id'],
 						'invoiceid'=>$value['invoice_id'],
-						'description'=>'Pago via Boleto',
+						'description'=>'Boleto pago - baixa dada via cron job',
 						'amountin'=>$value['paid_amount'],
-						'fees'=>$params['fee'],
+						'fees'=>$value['fee'],
 						'paymentmethod'=>'gofasiuguboleto',
 						'transid'=>'gib-'.$value['trans_id'].'-'.$params_api['api_mode'],
 					],
-					$params['admin']
+					(int)gib_setup_admin()['id']
 				);
 				$update_invoice_log[$value['invoice_id']]=$update_invoice;
 				$add_trans_log[$value['invoice_id']]=$add_trans;

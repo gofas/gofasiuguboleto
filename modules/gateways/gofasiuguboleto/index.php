@@ -16,18 +16,7 @@ function gofasiuguboleto_link($params){
 	if(stripos($_SERVER['REQUEST_URI'], 'viewinvoice.php') !== false ){
 		require __DIR__.'/includes/functions.php';
 		$log['params'] = $params;
-		if($params['amount'] >= $params['minimunamount']){
-			/*
-			$access_token_ = gib_get_token();
-			$access_token = $access_token_['result']['access_token'];
-			if($access_token_['result']['access_token']){
-				 $access_token = $access_token_['result']['access_token'];
-			 }
-			 else{
-				 $error .= $access_token_['response_code'].': '.json_encode($access_token_['result']);
-			}
-			$log['access_token_'] = $access_token_;
-			*/	
+		if($params['amount'] >= $params['minimunamount']){	
 			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gibwhmcsurl') -> get( array( 'value','created_at') ) as $gibwhmcsurl_ ){
 				$gibwhmcsurl					= $gibwhmcsurl_->value;
 			}
@@ -46,7 +35,6 @@ function gofasiuguboleto_link($params){
 				setTimeout(function(){ tooltip.innerHTML = "Copiar linha digitável"; }, 1000);
 			  }
 			</script>';
-			$result .= '<script type="text/javascript" src="'.$gibwhmcsurl.'modules/gateways/gofasiuguboleto/assets/js/scripts.js" charset="UTF-8"></script>';
 			$result .= '<input type="hidden" id="system_url" value="'.$gibwhmcsurl.'">';
 			$result .= '<input type="hidden" id="invoice_id" value="'.$params['invoiceid'].'">';
 			$params_api = gib_api_connect();
@@ -63,7 +51,24 @@ function gofasiuguboleto_link($params){
 			$log['saved_boleto_float_amount'] = $saved_boleto_float_amount;
 			
 			$log['saved_boleto'] = $saved_boleto;
-			if($saved_boleto['pdf'] and $saved_boleto_amount === $invoice_int_amount){
+
+			$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$params['invoiceid'] ), (int)$params['admin'] );
+			$datediff = gib_datediff($GetInvoiceResults['duedate'],$params['diasparavencimento']);
+			$log['datediff'] = $datediff;
+			
+			$now_int = (int)date('Ymd');
+			$billet_duedate_int = (int)preg_replace("/[^0-9]/", "", $saved_boleto['duedate']);
+			
+			if($saved_boleto['pdf'] and $saved_boleto_amount === $invoice_int_amount and $billet_duedate_int >= $now_int ){
+				$charge_verify = gib_charge_verify($saved_boleto['charge_id']);
+				$log['charge_verify'] = $charge_verify;
+				if((string)$charge_verify['result']['status'] === (string)'paid'){
+					$add_trans = gib_add_trans($params['clientdetails']['id'], $params['invoiceid'], (float)number_format( $charge_verify['result']['total_paid_cents']/100,  2, '.', ''), (float)number_format( $charge_verify['result']['taxes_paid_cents']/100,  2, '.', ''), 'gib-'.$saved_boleto['charge_id'].'-'.$params_api['api_mode'], 'Boleto pago - baixa dada ao acessar a fatura');
+					header_remove();
+					header("Location: ".$gibwhmcsurl.'/viewinvoice.php?id='.$params['invoiceid'],true,303);
+					exit;
+				}
+
 				$result .= $params['message'];
 				$result .= '<a target="_blank" class="btn btn-default" style=" float: left;font-size: 14px;" href="'.$saved_boleto['pdf'].'">Visualizar o Boleto</a>';
 				$result .= '<input value="'.$saved_boleto['bankLine'].'" id="qrcodeforcopy" style="width: 0px;height: 0px;font-size: 0px;padding: 0px;display:none;">';
@@ -88,8 +93,7 @@ function gofasiuguboleto_link($params){
 					return $result;
 				}
 			}
-			if(!$saved_boleto['pdf'] || !$saved_boleto['bankLine'] || $saved_boleto_amount !== $invoice_int_amount ){
-				$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$params['invoiceid'] ), (int)$params['admin'] );
+			if(!$saved_boleto['pdf'] || !$saved_boleto['bankLine'] || $saved_boleto_amount !== $invoice_int_amount || $billet_duedate_int < $now_int){
 				$line_items = array();
 				foreach( $GetInvoiceResults['items']['item'] as $Value){
 					//$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');
@@ -105,7 +109,7 @@ function gofasiuguboleto_link($params){
 						'method'=>'bank_slip',
 						'restrict_payment_method'=>true,
 						'email'=>$customer['email'],
-						'bank_slip_extra_days'=>30,
+						'bank_slip_extra_days'=>(int)$datediff['datediff'],
 						'items'=>$line_items,
 						'payer' => [
 							'name'=> $customer['name'],
@@ -141,6 +145,7 @@ function gofasiuguboleto_link($params){
 								'invoice_id'=>$params['invoiceid'],
 								'charge_id'=>$boleto_['result']['invoice_id'],
 								'amount'=>$invoice_int_amount,
+								'duedate'=>(string)$datediff['duedate'],
 								'pdf'=>$boleto_['result']['pdf'],
 								'bankLine'=>$boleto_['result']['identification'],
 								'api_mode'=>$params_api['api_mode'],
@@ -156,6 +161,7 @@ function gofasiuguboleto_link($params){
 								'invoice_id'=>$params['invoiceid'],
 								'charge_id'=>$boleto_['result']['invoice_id'],
 								'amount'=>$invoice_int_amount,
+								'duedate'=>(string)$datediff['duedate'],
 								'pdf'=>$boleto_['result']['pdf'],
 								'bankLine'=>$boleto_['result']['identification'],
 								'api_mode'=>$params_api['api_mode'],
@@ -184,7 +190,7 @@ function gofasiuguboleto_link($params){
 			}
 			if(!$error and $params['redirecttobillet'] and stripos($_SERVER['REQUEST_URI'], 'viewinvoice') ){
 				header_remove();
-				header("Location: ".$boleto_['result']['Charge']['Transactions']['0']['Boleto']['pdf'],true,303);
+				header("Location: ".$boleto_['result']['pdf'],true,303);
 				exit;
 			}
 			else {

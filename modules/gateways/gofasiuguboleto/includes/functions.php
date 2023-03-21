@@ -12,13 +12,14 @@ require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 if(!defined("WHMCS")){die();}
 use WHMCS\Database\Capsule;
+use WHMCS\Aplication;
 if(!function_exists('gib_api_connect')){
 	function gib_api_connect(){
 		$params = getGatewayVariables('gofasiuguboleto');
 		if($params['sandbox']){
 			$params_api = [
 				'api_mode' => 'sandbox',
-				'account_id' => $params['sandbox_account_id'],
+				'account_id' => $params['account_id'],
 				'api_token' => $params['sandbox_api_token'],
 				'charge_url' => 'https://api.iugu.com/v1',
 			];
@@ -64,11 +65,11 @@ if( !function_exists('gib_charge_verify') ){
 	function gib_charge_verify($charge_id){
 		$params_api = gib_api_connect();
 		$curl = curl_init();
-		$access_token_ = gib_get_token();
-		$access_token = $access_token_['result']['access_token'];
+		//$access_token_ = gib_get_token();
+		//$access_token = $access_token_['result']['access_token'];
 
 		curl_setopt_array($curl, array(
-			CURLOPT_URL => $params_api['charge_url'].'/transactions?galaxPayIds='.$charge_id.'&limit=1&order=createdAt.desc&startAt=0',
+			CURLOPT_URL => $params_api['charge_url'].'/invoices/'.$charge_id,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_ENCODING => '',
 			CURLOPT_MAXREDIRS => 10,
@@ -77,8 +78,9 @@ if( !function_exists('gib_charge_verify') ){
 			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 			CURLOPT_CUSTOMREQUEST => 'GET',
 			CURLOPT_HTTPHEADER => array(
-		    	'Authorization: Basic '.(string)$params_api['api_token'],
-				'Content-Type: application/json'
+		    	'Authorization: Basic '.base64_encode((string)$params_api['api_token'].':'),
+				'Content-Type: application/json',
+				'Accept: application/json',
 		  	),
 		));
 		$result = json_decode(curl_exec($curl),true);
@@ -98,7 +100,8 @@ if( !function_exists('gib_get_string_between') ){
 	}
 }
 if( !function_exists('gib_add_trans') ){
-	function gib_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){	
+	function gib_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){
+		$params = getGatewayVariables('gofasiuguboleto');
  		$addtransvalues['userid'] = $user_id;
  		$addtransvalues['invoiceid'] = $invoice_id;
  		$addtransvalues['description'] = $description;
@@ -107,13 +110,16 @@ if( !function_exists('gib_add_trans') ){
  		$addtransvalues['paymentmethod'] = 'gofasiuguboleto';
  		$addtransvalues['transid'] = $charge_id;
  		$addtransvalues['date'] = date('d/m/Y');
-		$addtransresults = localAPI( "addtransaction", $addtransvalues, (int)$params['admin']);
+		$addtransresults = localAPI( "addtransaction", $addtransvalues, (int)gib_setup_admin()['id']);
+		$delete_qrc = Capsule::table('gofasiuguboleto')->where('invoice_id', '=',$invoice_id)->delete();
+		$gib_update_stats = gib_update_stats();
+		
 		if( $addtransresults['result'] === 'success'){
 			return array('values'=>$addtransvalues, 'result'=>$addtransresults);
 		}
 		elseif($addtransresults['result'] !== 'success'){
 			$error = '<b>Não foi possível gravar a transação.</b>';
-			return array('error'=>$error, 'values'=>$addtransvalues, 'result'=>$addtransresults);
+			return array('error'=>$error, 'values'=>$addtransvalues, 'result'=>$addtransresults,'update_stats'=>$gib_update_stats);
 		}
 	}
 }
@@ -122,7 +128,7 @@ if(!function_exists('gib_customer') ){
 	function gib_customer($client_id){
 		//Determine custom fields id
 		$params = getGatewayVariables('gofasiuguboleto');
-		$client = localAPI('GetClientsDetails',array( 'clientid' => $client_id, 'stats' => false, ), $params['admin']);
+		$client = localAPI('GetClientsDetails',array( 'clientid' => $client_id, 'stats' => false, ), (int)gib_setup_admin()['id']);
 		foreach( Capsule::table('tblcustomfields')->where('type','=','client')->get() as $customfield ){
 			$customfield_id = $customfield->id;
 			$customfield_name = strtolower($customfield->fieldname);
@@ -283,6 +289,7 @@ if( !function_exists('gib_save_qrc') ){
 			'invoice_id'=>$qr_code['invoice_id'],
 			'charge_id'=>$qr_code['charge_id'],
 			'amount'=>$qr_code['amount'],
+			'duedate'=>$qr_code['duedate'],
 			'pdf'=>$qr_code['pdf'],
 			'bankLine'=>$qr_code['bankLine'],
 			'api_mode'=>$qr_code['api_mode'],
@@ -335,6 +342,7 @@ if( !function_exists('gib_verify_install') ){
 					$table->string('invoice_id');
 					$table->string('charge_id');
 					$table->string('amount');
+					$table->string('duedate');
 					$table->text('pdf');
 					$table->string('bankLine');
 					$table->string('api_mode');
@@ -357,47 +365,10 @@ if( !function_exists('gib_verify_install') ){
 // Admin functions
 if( !function_exists('gib_whmcs_url') ){
 	function gib_whmcs_url(){
-		$url		= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-		if( stripos( $url, '/configgateways.php') !== false){
-			$whmcs_url__ = str_replace("\\",'/',(isset($_SERVER['HTTPS']) ? "https://" : "http://").$_SERVER['HTTP_HOST'].substr(getcwd(),strlen($_SERVER['DOCUMENT_ROOT'])));
-			$admin_url = $whmcs_url__.'/';
-			$vtokens = explode('/', $url);
-			$whmcs_admin_path = '/'.$vtokens[sizeof($vtokens)-2].'/';
-			$whmcs_url = str_replace( $whmcs_admin_path, '', $admin_url).'/';
-			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gibwhmcsurl') -> get( array( 'value','created_at') ) as $gibwhmcsurl_ ){
-				$gibwhmcsurl					= $gibwhmcsurl_->value;
-				$gibwhmcsurl_created_at			= $gibwhmcsurl_->created_at;
-			}
-			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gibwhmcsadminurl') -> get( array( 'value','created_at') ) as $gibwhmcsadminurl_ ){
-				$gibwhmcsadminurl				= $gibwhmcsadminurl_->value;
-				$gibwhmcsadminurl_created_at	= $gibwhmcsurl_->created_at;
-			}
-			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gibwhmcsadminpath') -> get( array( 'value','created_at') ) as $gibwhmcsadminpath_ ){
-				$gibwhmcsadminpath				= $gibwhmcsadminpath_->value;
-				$gibwhmcsadminpath_created_at	= $gibwhmcsurl_->created_at;
-			}
-			if( !$gibwhmcsurl ){
-				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'gibwhmcsurl', 'value' => $whmcs_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
-				catch (\Exception $e){ $e->getMessage(); }
-				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'gibwhmcsadminurl', 'value' => $admin_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
-				catch (\Exception $e){ $e->getMessage(); }
-				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'gibwhmcsadminpath', 'value' => $whmcs_admin_path, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
-				catch (\Exception $e){ $e->getMessage(); }
-			}
-			if( $gibwhmcsurl and ($whmcs_url !== $gibwhmcsurl) ){
-				try { Capsule::table('tblconfiguration')->where( 'setting', 'gibwhmcsurl')->update(array('value' => $whmcs_url, 'created_at' =>  $gibwhmcsurl_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
-				catch (\Exception $e){$e->getMessage();}
-			}
-			if( $gibwhmcsadminurl and ($admin_url !== $gibwhmcsadminurl) ){
-				try { Capsule::table('tblconfiguration')->where( 'setting', 'gibwhmcsadminurl')->update(array('value' => $admin_url, 'created_at' =>  $gibwhmcsadminurl_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
-				catch (\Exception $e){$e->getMessage();}
-			}
-			if( $gibwhmcsadminpath and ($whmcs_admin_path !== $gibwhmcsadminpath) ){
-				try { Capsule::table('tblconfiguration')->where( 'setting', 'gibwhmcsadminpath')->update(array('value' => $whmcs_admin_path, 'created_at' =>  $gibwhmcsadminpath_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
-				catch (\Exception $e){$e->getMessage();}
-			}
-
-		}
+		$self = App::self();
+		$whmcs_admin_path = gib_get_protected_property($self, 'customadminpath');
+		$whmcs_url = App::getSystemUrl();
+		$admin_url = $whmcs_url.$whmcs_admin_path;
 		return ['url'=>$whmcs_url,'admin_url'=>$admin_url,'admin_path'=>$whmcs_admin_path];
 	}
 }
@@ -429,23 +400,47 @@ if(!function_exists('gib_decrypt')){
 	    return openssl_decrypt($q, $encryptionMethod, $secretHash);
 	}
 }
-if( !function_exists('gib_get_version') ){
+if(!function_exists('gib_get_version') ){
 	function gib_get_version($page_id,$referer,$module_version){
-		$currentUser = new \WHMCS\Authentication\CurrentUser;
-		$admin_ = json_decode(json_encode($currentUser->admin()),true);
-		$admin = ['email'=>$admin_['email'],'firstname'=>$admin_['firstname'],'lastname'=>$admin_['lastname']];
-		$query = 'https://gofas.net/br/updates/?software='.$page_id.'&referer='.$referer.'&version='.$module_version.'&email='.$admin['email'].'&firstname='.$admin['firstname'].'&lastname='.$admin['lastname'].gib_sysinfo();
+		//$currentUser = new \WHMCS\Authentication\CurrentUser;
+		$current_admin = gib_current_admin();
+		//$admin_ = json_decode(json_encode($currentUser->admin()),true);
+		//$admin = ['email'=>$admin_['email'],'firstname'=>$admin_['firstname'],'lastname'=>$admin_['lastname']];
+		$query = '?software_id='.$page_id.'&install_url='.$referer.'&current_version='.$module_version.'&installer_email='.$current_admin['email'].'&installer_firstname='.$current_admin['firstname'].'&installer_lastname='.$current_admin['lastname'].'&action=verify'.gib_sysinfo();
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
-		curl_setopt($curl, CURLOPT_URL, $query);
+		curl_setopt($curl, CURLOPT_URL, 'https://gofas.net/br/updates/stats.php'.$query);
 		$available_version_ = curl_exec($curl);
 		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
 		return ['version'=>$available_version_,'http_code'=>$http_status];
 	}
 }
+if(!function_exists('gib_update_stats') ){
+	function gib_update_stats(){
+		$params = getGatewayVariables('gofasiuguboleto');
+		if($params['sandbox']){
+			return;
+		}
+		$params_api = gib_api_connect();
+		$whmcs_url = gib_whmcs_url();
+		$setup_admin = gib_setup_admin();
+		
+		$query = '?software_id=14942&install_url='.$whmcs_url['admin_url'].'&installer_email='.$setup_admin['email'].'&installer_firstname='.$setup_admin['firstname'].'&installer_lastname='.$setup_admin['lastname'].'&action=charge';
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+		curl_setopt($curl, CURLOPT_URL, 'https://gofas.net/br/updates/stats.php'.$query);
+		$response = curl_exec($curl);
+		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		return ['query'=>$query,'response'=>$response,'http_code'=>$http_status];
+	}
+}
+
 if(!function_exists('gib_sysinfo')){
 	function gib_sysinfo(){
 		foreach( Capsule::table('tblconfiguration')
@@ -474,7 +469,7 @@ if(!function_exists('gib_verify_module_updates')){
 		}
 		///// Get
 		if(!$version){
-			$get_version = gib_get_version($page_id,$referer,$module_version,$admin);
+			$get_version = gib_get_version($page_id,$referer,$module_version);
 			$get_embed	 = gib_get_embed($page_id,$referer,$module_version);
 			
 			if((int)$get_version['http_code'] !== 200){
@@ -495,7 +490,7 @@ if(!function_exists('gib_verify_module_updates')){
 			}
 		}
 		if($version and (string)$module_version !== (string)$local_version){
-			$get_version = gib_get_version($page_id,$referer,$module_version,$admin);
+			$get_version = gib_get_version($page_id,$referer,$module_version);
 			$get_embed	 = gib_get_embed($page_id,$referer,$module_version);
 			if((int)$get_version['http_code'] !== 200){
 				$error .= $get_version['http_code'].' '.$get_version['version'];
@@ -520,7 +515,8 @@ if(!function_exists('gib_verify_module_updates')){
 				'value' => json_encode([
 					'local_version'=>$module_version,
 					'last_version'=>$get_version['version'],
-					'check'=>gib_encrypt($get_embed['embed'])
+					'check'=>gib_encrypt($get_embed['embed']),
+					'admin'=>gib_current_admin(),
 				]),
 				'created_at' => $created_at,
 				'updated_at' => $updated_at
@@ -541,7 +537,8 @@ if(!function_exists('gib_verify_module_updates')){
 					'value' => json_encode([
 						'local_version'=>$module_version,
 						'last_version'=>$available_version,
-						'check'=>gib_encrypt($get_embed['embed'])
+						'check'=>gib_encrypt($get_embed['embed']),
+						'admin'=>gib_current_admin(),
 					]),
 					'created_at' =>  $created_at,
 					'updated_at' => date("Y-m-d H:i:s")]
@@ -558,7 +555,8 @@ if(!function_exists('gib_verify_module_updates')){
 					'value' => json_encode([
 						'local_version'=>$module_version,
 						'last_version'=>$available_version,
-						'check'=>gib_encrypt($get_embed['embed'])
+						'check'=>gib_encrypt($get_embed['embed']),
+						'admin'=>gib_current_admin(),
 					]),
 					'created_at' =>  $created_at,
 					'updated_at' => date("Y-m-d H:i:s")]
@@ -607,14 +605,21 @@ if(!function_exists('gib_version')){
 		}
 	}
 }
-if(!function_exists('gib_tbladmins')){
-	function gib_tbladmins(){
-		foreach( Capsule::table('tbladmins') -> get() as $tbladmins_ ){
-			$tbladmins[$tbladmins_->id] = $tbladmins_->id.' - '.$tbladmins_->firstname.' '.$tbladmins_->lastname.' ('.$tbladmins_->username.')';
-		}
-		return $tbladmins;
+if(!function_exists('gib_current_admin')){
+	function gib_current_admin(){
+		$currentUser = new \WHMCS\Authentication\CurrentUser;
+		$admin = json_decode(json_encode($currentUser->admin()),true);
+		return $admin;
 	}
 }
+if(!function_exists('gib_setup_admin')){
+	function gib_setup_admin(){
+	foreach( Capsule::table('tblconfiguration')->where('setting','=','gib_version')->get(['value']) as $version_ ){
+		$version		= json_decode($version_->value, true);
+		$admin			= $version['admin'];
+	}
+	return $admin;
+}}
 if(!function_exists('gib_tblticketdepartments')){
 	function gib_tblticketdepartments(){
 		$tblticketdepartments[] = '';
@@ -628,7 +633,7 @@ if(!function_exists('gib_tblticketdepartments')){
 }
 if(!function_exists('gib_line_items')){
 	function gib_line_items($invoice_id){
-		$invoice			= localAPI('getinvoice',array('invoiceid'=>$invoice_id),(int)$params['admin']);
+		$invoice			= localAPI('getinvoice',array('invoiceid'=>$invoice_id),(int)gib_setup_admin()['id']);
 		// Itens de Linha - Serviços/produtos relacionados à fatura
 		$invoice_items_item	= $invoice['items']['item'];
 		$line_items = array();
@@ -636,5 +641,45 @@ if(!function_exists('gib_line_items')){
 			$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
 		}
 		return substr( implode("\n",$line_items),  0, 400);
+	}
+}
+if(!function_exists('gib_datediff')){
+	function gib_datediff($invoice_duedate,$diasparavencimento=1){
+		if( $diasparavencimento and $diasparavencimento > 0 and $diasparavencimento > 1){
+			$diasParaVencimento = '+'.$diasparavencimento.' days';
+		}
+		if( $diasparavencimento == '0'){
+			$diasParaVencimento = '+1 day';
+		}
+		if( $diasparavencimento == '1'){
+			$diasParaVencimento = '+1 day';
+		}
+		if( $diasparavencimento > '30'){
+			$diasParaVencimento = '+30 days';
+		}
+		if( !$diasparavencimento ){
+			$diasParaVencimento = '+1 day';
+		}
+		if( $invoice_duedate > date('Y-m-d') ){
+			$billet_duedate = $invoice_duedate;
+		}
+		if( $invoice_duedate === date('Y-m-d') ){
+			$billet_duedate = date('Y-m-d', strtotime($diasParaVencimento));
+		}
+		if( $invoice_duedate < date('Y-m-d') ){
+			$billet_duedate = date('Y-m-d', strtotime( $diasParaVencimento )); // Se fatura já venceu, data de vencimento do boleto = Hoje + X dia(s)
+		}
+		$now = (int)date('Ymd');
+		$due_date = (int)preg_replace("/[^0-9]/", "", $billet_duedate);
+		$datediff = $due_date-$now;
+		return ['datediff'=>$datediff,'duedate'=>$billet_duedate];
+	}
+}
+if(!function_exists('gib_get_protected_property')){
+	function gib_get_protected_property($object, $property){
+	    $reflectedClass = new \ReflectionClass($object);
+	    $reflection = $reflectedClass->getProperty($property);
+	    $reflection->setAccessible(true);
+	    return $reflection->getValue($object);
 	}
 }

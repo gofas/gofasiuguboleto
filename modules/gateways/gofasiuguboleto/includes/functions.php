@@ -415,6 +415,7 @@ if(!function_exists('gib_get_version') ){
 		$available_version_ = curl_exec($curl);
 		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
+		//logModuleCall('gofasiuguboleto','gib_get_version',array('available_version'=>$available_version_),'','' );
 		return ['version'=>$available_version_,'http_code'=>$http_status];
 	}
 }

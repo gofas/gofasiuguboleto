@@ -23,7 +23,45 @@ function gofasiuguboleto_config(){
 		require_once __DIR__.'/functions.php';
 		$verify_install = gib_verify_install();
 		$whmcs_url = gib_whmcs_url();
-		$check_updates = gib_verify_module_updates($module_page,$whmcs_url['admin_url'],$module_version);		
+		$check_updates = gib_verify_module_updates($module_page,$whmcs_url['admin_url'],$module_version);
+		//echo '<pre>',print_r($sysinfo),'</pre>';
+		foreach( Capsule::table('tblconfiguration')
+		->where('setting','=','Version')
+		->get(['value']) as $data1 ){
+			$Version = $data1->value;
+		}
+		$whmcs_version=(int)preg_replace('/[^\da-z]/i', '',  gib_get_string_between('#'.$Version, '#', '-'));
+		if($whmcs_version<861){
+			return [
+				'FriendlyName' => [
+					'Type' => 'System',
+					'Value' => 'Gofas iugu - Boleto',
+				],
+				'separator_1' => [
+					'Description' => '
+					<div class="gib_separator" style="padding: 1px 15px 9px;">
+						<div style="float: right; padding: 0px;">
+						'.gib_decrypt($check_updates['check']).'
+						</div>
+						<div style="margin-left: 10px;">
+							<h4 style="padding-top: 5px; color: red;">Módulo Gofas iugu - Boleto para WHMCS v'.$module_version.' | requer WHMCS versão 8.6.1 ou superior</h4>
+							'.$check_updates['message'].'
+							<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14942#configuration">Documentação do módulo</a> | <a style="text-decoration:underline;" target="_blank" href="https://dev.iugu.com/reference/metadados/">Documentação da API iugu</a></p>
+						</div>
+					</div>',
+				],
+				'footer' => [
+					'Description' => '<div class="ggp_section">
+					<p>&copy; '.date('Y').' <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net">Gofas.net</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net/?p=14641#changelog">'.$module_version.'</a> | <a  style="text-decoration:underline;"target="_blank" title="↗ Documentação" href="https://gofas.net/?p=14641">Documentação</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Fórum de Suporte" href="https://gofas.net/foruns/">Suporte</a>.</p>
+					<p style="font-size: 11px;">
+					Ao utilizar esse módulo você concorda com nosso <a style="text-decoration:underline;" target="_blank" title="↗ Contrato de licença de uso de software" href="https://gofas.net/?p=9340">contrato de licença de uso de software</a>.
+					</p>
+					'.$check_updates['message'].'
+					</div>',
+				],
+			];
+		}
+			
 		$opt_num = 1;
 		$renderize = array(
 			'FriendlyName' => array(

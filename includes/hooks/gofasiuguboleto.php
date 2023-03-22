@@ -24,6 +24,7 @@ if(!function_exists('gib_qrcode_mergetags_fields')){
 }
 if(!function_exists('gib_qrcode_mergetags')){
     function gib_qrcode_mergetags($vars){
+		require_once __DIR__.'/../../modules/gateways/gofasiuguboleto/includes/functions.php';
         $params = getGatewayVariables('gofasiuguboleto');
 	    if(
 			$vars['messagename'] === 'Invoice Created' ||

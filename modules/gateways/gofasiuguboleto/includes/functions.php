@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14942
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14687
- * @version		1.0.0
+ * @version		1.0.1
  */
 require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
@@ -419,17 +419,16 @@ if(!function_exists('gib_get_version') ){
 		return ['version'=>$available_version_,'http_code'=>$http_status];
 	}
 }
+
 if(!function_exists('gib_update_stats') ){
 	function gib_update_stats(){
 		$params = getGatewayVariables('gofasiuguboleto');
 		if($params['sandbox']){
 			return;
 		}
-		$params_api = gib_api_connect();
 		$whmcs_url = gib_whmcs_url();
 		$setup_admin = gib_setup_admin();
-		
-		$query = '?software_id=14942&install_url='.$whmcs_url['admin_url'].'&installer_email='.$setup_admin['email'].'&installer_firstname='.$setup_admin['firstname'].'&installer_lastname='.$setup_admin['lastname'].'&action=charge';
+		$query = '?software_id=14942&install_url='.$whmcs_url['admin_url'].'&current_version='.gib_get_local_version().'&installer_email='.$setup_admin['email'].'&installer_firstname='.$setup_admin['firstname'].'&installer_lastname='.$setup_admin['lastname'].'&action=charge'.gib_sysinfo();
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
@@ -438,10 +437,18 @@ if(!function_exists('gib_update_stats') ){
 		$response = curl_exec($curl);
 		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
-		return ['query'=>$query,'response'=>$response,'http_code'=>$http_status];
+		$return = ['query'=>$query,'response'=>$response,'http_code'=>$http_status];
+		return $return;
 	}
 }
-
+if(!function_exists('gib_get_local_version')){
+	function gib_get_local_version(){
+	foreach( Capsule::table('tblconfiguration')->where('setting','=','gib_version')->get(['value']) as $version_ ){
+		$version		= json_decode($version_->value, true);
+		$local_version			= $version['local_version'];
+	}
+	return $local_version;
+}}
 if(!function_exists('gib_sysinfo')){
 	function gib_sysinfo(){
 		foreach( Capsule::table('tblconfiguration')

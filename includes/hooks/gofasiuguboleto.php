@@ -34,7 +34,7 @@ if(!function_exists('gib_qrcode_mergetags')){
 			$vars['messagename'] === 'Third Invoice Overdue Notice'
 		){
 			$gib_merge_fields	= array();
-			$invoice			= localAPI( 'GetInvoice', array('invoiceid' => $vars['relid']), (int)(int)gib_setup_admin()['id']);
+			$invoice			= localAPI( 'GetInvoice', array('invoiceid' => $vars['relid']), (int)gib_setup_admin()['id']);
 			if( $invoice['total'] > '0.00' and $invoice['paymentmethod'] === 'gofasiuguboleto'){
 				// Saved Billets
 				$boleto_saved = array();

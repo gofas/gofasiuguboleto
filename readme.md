@@ -2,23 +2,11 @@
 
 ## [Unreleased](https://github.com/mauriciogofas/gofasiuguboleto/tree/HEAD)
 
-[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.0.1...HEAD)
-
-**Implemented enhancements:**
-
-- Atualiza o registro de versão ao registrar confirmação de pagamento [\#2](https://github.com/mauriciogofas/gofasiuguboleto/issues/2)
-
-## [v1.0.1](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.0.1) (23/03/2023)
-
-[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.0.0...v1.0.1)
+[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/6fc7f2ad0bba5831ed9e40697c0a68b260b4f9b0...HEAD)
 
 **Implemented enhancements:**
 
 - Lançamento [\#1](https://github.com/mauriciogofas/gofasiuguboleto/issues/1)
-
-## [v1.0.0](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.0.0) (21/03/2023)
-
-[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/6fc7f2ad0bba5831ed9e40697c0a68b260b4f9b0...v1.0.0)
 
 
 

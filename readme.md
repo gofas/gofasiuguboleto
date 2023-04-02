@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/mauriciogofas/gofasiuguboleto/tree/HEAD)
+## [v1.1.0](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.1.0) (02/04/2023)
 
-[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.0.1...HEAD)
+[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.0.0...v1.1.0)
 
 **Implemented enhancements:**
 
@@ -12,10 +12,6 @@
 - Adicionada compatibilidade com PHP 7 e 8  [\#4](https://github.com/mauriciogofas/gofasiuguboleto/issues/4)
 - Atualização dos links para a documentação [\#3](https://github.com/mauriciogofas/gofasiuguboleto/issues/3)
 - Atualiza o registro de versão ao registrar confirmação de pagamento [\#2](https://github.com/mauriciogofas/gofasiuguboleto/issues/2)
-
-## [v1.0.1](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.0.1) (23/03/2023)
-
-[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.0.0...v1.0.1)
 
 ## [v1.0.0](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.0.0) (23/03/2023)
 

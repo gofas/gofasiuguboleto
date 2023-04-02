@@ -6,6 +6,11 @@
 
 **Implemented enhancements:**
 
+- Redução no número de pastas e arquivos do módulo [\#8](https://github.com/mauriciogofas/gofasiuguboleto/issues/8)
+- Nova opção: Máximo de boletos verificados a cada consulta de status de pagamento realizada na API iugu  [\#6](https://github.com/mauriciogofas/gofasiuguboleto/issues/6)
+- Nova opção: Horário da verificação [\#5](https://github.com/mauriciogofas/gofasiuguboleto/issues/5)
+- Adicionada compatibilidade com PHP 7 e 8  [\#4](https://github.com/mauriciogofas/gofasiuguboleto/issues/4)
+- Atualização dos links para a documentação [\#3](https://github.com/mauriciogofas/gofasiuguboleto/issues/3)
 - Atualiza o registro de versão ao registrar confirmação de pagamento [\#2](https://github.com/mauriciogofas/gofasiuguboleto/issues/2)
 
 ## [v1.0.1](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.0.1) (23/03/2023)

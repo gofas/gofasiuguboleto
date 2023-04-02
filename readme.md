@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Diretório raíz do WHMCS agora é obtido via banco de dados a consultando o diretório do template ativo \(para casos onde localizações relativas podem falhar\) [\#13](https://github.com/mauriciogofas/gofasiuguboleto/issues/13)
 - Checa a instalação do hook e alerta no topo das configurações quando o arquivo não é localizado [\#10](https://github.com/mauriciogofas/gofasiuguboleto/issues/10)
 - Botão "Verificar atualizações" nas configurações reseta a informação local e verifica a versão mais recente disponível [\#9](https://github.com/mauriciogofas/gofasiuguboleto/issues/9)
 

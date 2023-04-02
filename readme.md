@@ -6,7 +6,9 @@
 
 **Implemented enhancements:**
 
+- Exibe nas configurações do módulo data e hora da última verificação de versão [\#14](https://github.com/mauriciogofas/gofasiuguboleto/issues/14)
 - Diretório raíz do WHMCS agora é obtido via banco de dados a consultando o diretório do template ativo \(para casos onde localizações relativas podem falhar\) [\#13](https://github.com/mauriciogofas/gofasiuguboleto/issues/13)
+- Carrega configurações e variáveis personalizadas incluídas nos arquivos /custom/config.php e /custom/params.php  [\#11](https://github.com/mauriciogofas/gofasiuguboleto/issues/11)
 - Checa a instalação do hook e alerta no topo das configurações quando o arquivo não é localizado [\#10](https://github.com/mauriciogofas/gofasiuguboleto/issues/10)
 - Botão "Verificar atualizações" nas configurações reseta a informação local e verifica a versão mais recente disponível [\#9](https://github.com/mauriciogofas/gofasiuguboleto/issues/9)
 

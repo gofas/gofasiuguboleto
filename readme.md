@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased](https://github.com/mauriciogofas/gofasiuguboleto/tree/HEAD)
+
+[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.1.0...HEAD)
+
+**Implemented enhancements:**
+
+- Checa a instalação do hook e alerta no topo das configurações quando o arquivo não é localizado [\#10](https://github.com/mauriciogofas/gofasiuguboleto/issues/10)
+- Botão "Verificar atualizações" nas configurações reseta a informação local e verifica a versão mais recente disponível [\#9](https://github.com/mauriciogofas/gofasiuguboleto/issues/9)
+
 ## [v1.1.0](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.1.0) (02/04/2023)
 
 [Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.0.0...v1.1.0)

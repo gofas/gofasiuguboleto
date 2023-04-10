@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/mauriciogofas/gofasiuguboleto/tree/HEAD)
+
+[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.2.0...HEAD)
+
+**Fixed bugs:**
+
+- Descontos aplicados à fatura considerados como números positivos [\#15](https://github.com/mauriciogofas/gofasiuguboleto/issues/15)
+
 ## [v1.2.0](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.2.0) (04/04/2023)
 
 [Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.1.0...v1.2.0)

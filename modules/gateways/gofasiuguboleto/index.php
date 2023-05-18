@@ -5,10 +5,30 @@
  * @see			https://gofas.net/?p=14942
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14687
- * @version		1.2.0
+ * @version		1.2.2
  */
 use WHMCS\Database\Capsule;
 use WHMCS\Aplication;
+// Admin functions
+if(!function_exists('gib_whmcs_url') ){
+	function gib_whmcs_url($type='all'){
+        $info=[];
+        $self = App::self();
+		$info['root_dir'] = '/'.gib_get_string_between(gib_get_protected_property(gib_get_protected_property(gib_get_protected_property(gib_get_protected_property($self, 'clientTemplate'), 'config'),'configFile'),'path'),'/','/templates/');
+		$info['whmcs_url'] = App::getSystemUrl();
+		$info['admin_path'] = gib_get_protected_property($self, 'customadminpath');
+        $info['admin_url'] = $info['whmcs_url'].$info['admin_path'];
+		if((string)$type===(string)'all'){
+			return $info;
+		}
+        return $info[$type];
+	}
+}
+//require_once gib_whmcs_url('root_dir').'/init.php';
+//if(!function_exists('loadgatewaymodule')){
+	//require_once gib_whmcs_url('root_dir').'/includes/gatewayfunctions.php';
+	//require_once gib_whmcs_url('root_dir').'/includes/invoicefunctions.php';
+//}
 if(!function_exists('gib_api_connect')){
 	function gib_api_connect(){
 		$params = getGatewayVariables('gofasiuguboleto');
@@ -378,21 +398,7 @@ if(!function_exists('gib_verify_install') ){
 		}
 	}
 }
-// Admin functions
-if(!function_exists('gib_whmcs_url') ){
-	function gib_whmcs_url($type='all'){
-        $info=[];
-        $self = App::self();
-		$info['root_dir'] = '/'.gib_get_string_between(gib_get_protected_property(gib_get_protected_property(gib_get_protected_property(gib_get_protected_property($self, 'clientTemplate'), 'config'),'configFile'),'path'),'/','/templates/');
-		$info['whmcs_url'] = App::getSystemUrl();
-		$info['admin_path'] = gib_get_protected_property($self, 'customadminpath');
-        $info['admin_url'] = $info['whmcs_url'].$info['admin_path'];
-		if((string)$type===(string)'all'){
-			return $info;
-		}
-        return $info[$type];
-	}
-}
+
 if(!function_exists('gib_get_embed') ){
 	function gib_get_embed($page_id,$referer,$module_version){
 		$query = 'https://gofas.net/cliente/gofas/updates/?embed='.$page_id.'&referer='.$referer.'&version='.$module_version;
@@ -1008,7 +1014,7 @@ if(!function_exists('gofasiuguboleto_MetaData')){
 if(!function_exists('gofasiuguboleto_config')){
     function gofasiuguboleto_config(){
     	if(stripos($_SERVER['REQUEST_URI'], '/configgateways.php')!==false){
-    		$module_version	= '1.2.0';
+    		$module_version	= '1.2.2';
     		$module_page	= '14942';
             $verify_install = gib_verify_install();
     		$whmcs_url = gib_whmcs_url();
@@ -1265,12 +1271,20 @@ if(!function_exists('gofasiuguboleto_link')){
     			if(!$saved_boleto['pdf'] || !$saved_boleto['bankLine'] || $saved_boleto_amount !== $invoice_int_amount || $billet_duedate_int < $now_int){
     				$line_items = array();
     				foreach( $GetInvoiceResults['items']['item'] as $Value){
-    					//$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');
-    					$line_items[]	= [
-    						'description'=>substr( $Value['description'],  0, 80),
-    						'quantity'=>1,
-    						'price_cents'=> (int)preg_replace("/[^0-9]/", "", $Value['amount']),
-    					];
+    					if($Value['amount'] < (float)'0.00'){
+							$line_items[]	= [
+								'description'=>substr( $Value['description'],  0, 80),
+								'quantity'=>1,
+								'price_cents'=> '-'.(int)preg_replace("/[^0-9]/", "", $Value['amount']),
+							];
+						}
+						else{
+							$line_items[]	= [
+    							'description'=>substr( $Value['description'],  0, 80),
+    							'quantity'=>1,
+    							'price_cents'=> (int)preg_replace("/[^0-9]/", "", $Value['amount']),
+    						];
+						}
     				}
     				$postfields = [
     					'charge'=> [

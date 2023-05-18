@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14942
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14687
- * @version		1.2.0
+ * @version		1.2.2
  */
 if((int)substr(preg_replace('/[^\da-z]/i','',phpversion()),0,2)>=(int)81){
     require __DIR__.'/gofasiuguboleto/index.php';

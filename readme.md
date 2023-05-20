@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/mauriciogofas/gofasiuguboleto/tree/HEAD)
+
+[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.2.1...HEAD)
+
+**Closed issues:**
+
+- Resolvido o erro "gateway functions not found" no cadastro [\#16](https://github.com/mauriciogofas/gofasiuguboleto/issues/16)
+
 ## [v1.2.1](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.2.1) (10/04/2023)
 
 [Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.2.0...v1.2.1)

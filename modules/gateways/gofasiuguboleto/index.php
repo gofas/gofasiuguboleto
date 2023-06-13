@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14942
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14687
- * @version		1.2.2
+ * @version		1.2.3
  */
 use WHMCS\Database\Capsule;
 use WHMCS\Aplication;
@@ -1014,7 +1014,7 @@ if(!function_exists('gofasiuguboleto_MetaData')){
 if(!function_exists('gofasiuguboleto_config')){
     function gofasiuguboleto_config(){
     	if(stripos($_SERVER['REQUEST_URI'], '/configgateways.php')!==false){
-    		$module_version	= '1.2.2';
+    		$module_version	= '1.2.3';
     		$module_page	= '14942';
             $verify_install = gib_verify_install();
     		$whmcs_url = gib_whmcs_url();

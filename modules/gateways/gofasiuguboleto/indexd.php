@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14942
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14687
- * @version		1.2.2
+ * @version		1.2.3
  */
 use WHMCS\Database\Capsule;
 use WHMCS\Aplication;
@@ -747,14 +747,14 @@ if(!function_exists('gib_qrcode_mergetags_fields')){
 if(!function_exists('gib_qrcode_mergetags')){
     function gib_qrcode_mergetags($vars){
 		//require_once $root_dir.'/modules/gateways/gofasiuguboleto/includes/functions.php';
-        $params = getGatewayVariables('gofasiuguboleto');
-	    if(
+        if(
 			$vars['messagename'] === 'Invoice Created' ||
 			$vars['messagename'] === 'Invoice Payment Reminder' ||
 			$vars['messagename'] === 'First Invoice Overdue Notice' ||
 			$vars['messagename'] === 'Second Invoice Overdue Notice' ||
 			$vars['messagename'] === 'Third Invoice Overdue Notice'
 		){
+			$params = getGatewayVariables('gofasiuguboleto');
 			$gib_merge_fields	= array();
 			$invoice			= localAPI( 'GetInvoice', array('invoiceid' => $vars['relid']), (int)gib_setup_admin()['id']);
 			if( $invoice['total'] > '0.00' and $invoice['paymentmethod'] === 'gofasiuguboleto'){
@@ -1014,7 +1014,7 @@ if(!function_exists('gofasiuguboleto_MetaData')){
 if(!function_exists('gofasiuguboleto_config')){
     function gofasiuguboleto_config(){
     	if(stripos($_SERVER['REQUEST_URI'], '/configgateways.php')!==false){
-    		$module_version	= '1.2.2';
+    		$module_version	= '1.2.3';
     		$module_page	= '14942';
             $verify_install = gib_verify_install();
     		$whmcs_url = gib_whmcs_url();

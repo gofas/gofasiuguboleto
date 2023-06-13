@@ -747,14 +747,14 @@ if(!function_exists('gib_qrcode_mergetags_fields')){
 if(!function_exists('gib_qrcode_mergetags')){
     function gib_qrcode_mergetags($vars){
 		//require_once $root_dir.'/modules/gateways/gofasiuguboleto/includes/functions.php';
-        $params = getGatewayVariables('gofasiuguboleto');
-	    if(
+        if(
 			$vars['messagename'] === 'Invoice Created' ||
 			$vars['messagename'] === 'Invoice Payment Reminder' ||
 			$vars['messagename'] === 'First Invoice Overdue Notice' ||
 			$vars['messagename'] === 'Second Invoice Overdue Notice' ||
 			$vars['messagename'] === 'Third Invoice Overdue Notice'
 		){
+			$params = getGatewayVariables('gofasiuguboleto');
 			$gib_merge_fields	= array();
 			$invoice			= localAPI( 'GetInvoice', array('invoiceid' => $vars['relid']), (int)gib_setup_admin()['id']);
 			if( $invoice['total'] > '0.00' and $invoice['paymentmethod'] === 'gofasiuguboleto'){

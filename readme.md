@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/mauriciogofas/gofasiuguboleto/tree/HEAD)
+## [v1.2.3](https://github.com/mauriciogofas/gofasiuguboleto/tree/v1.2.3) (13/06/2023)
 
-[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.2.2...HEAD)
+[Full Changelog](https://github.com/mauriciogofas/gofasiuguboleto/compare/v1.2.2...v1.2.3)
 
 **Fixed bugs:**
 

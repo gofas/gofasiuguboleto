@@ -1006,7 +1006,7 @@ add_hook("EmailTplMergeFields",1,"gib_qrcode_mergetags_fields");
 if(!function_exists('gofasiuguboleto_MetaData')){
     function gofasiuguboleto_MetaData(){
         return array(
-            'DisplayName' => 'Gofas iugu - Boleto',
+            'DisplayName' => 'Gofas iugu Boleto',
             'APIVersion' => '1.1',
         );
     }
@@ -1035,7 +1035,7 @@ if(!function_exists('gofasiuguboleto_config')){
     			return [
     				'FriendlyName' => [
     					'Type' => 'System',
-    					'Value' => 'Gofas iugu - Boleto',
+    					'Value' => 'Gofas iugu Boleto',
     				],
     				'separator_1' => [
     					'Description' => '
@@ -1044,7 +1044,7 @@ if(!function_exists('gofasiuguboleto_config')){
     						'.gib_decrypt($check_updates['check']).'
     						</div>
     						<div>
-    							<h4 style="padding-top: 5px; color: red;">Módulo Gofas iugu - Boleto para WHMCS v'.$module_version.' | requer WHMCS versão 8.6.1 ou superior</h4>
+    							<h4 style="padding-top: 5px; color: red;">Módulo Gofas iugu Boleto para WHMCS v'.$module_version.' | requer WHMCS versão 8.6.1 ou superior</h4>
     							'.$check_updates['message'].'
     							<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14942#configuration">Documentação do módulo</a> | <a style="text-decoration:underline;" target="_blank" href="https://dev.iugu.com/reference/metadados/">Documentação da API iugu</a></p>
 								'.gib_file_exists_check('/includes/hooks/gofasiuguboleto.php').'
@@ -1066,7 +1066,7 @@ if(!function_exists('gofasiuguboleto_config')){
     		$renderize = array(
     			'FriendlyName' => array(
     				'Type' => 'System',
-    				'Value' => 'Gofas iugu - Boleto',
+    				'Value' => 'Gofas iugu Boleto',
     			),
     			'separator_1' => array(
     				'Description' => '
@@ -1075,7 +1075,7 @@ if(!function_exists('gofasiuguboleto_config')){
     					'.gib_decrypt($check_updates['check']).'
     					</div>
     					<div>
-    						<h4 style="padding-top: 5px;">Módulo Gofas iugu - Boleto para WHMCS v'.$module_version.'</h4>
+    						<h4 style="padding-top: 5px;">Módulo Gofas iugu Boleto para WHMCS v'.$module_version.'</h4>
     						'.$check_updates['message'].'
     						<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14942#configuration">Documentação do módulo</a> | <a style="text-decoration:underline;" target="_blank" href="https://dev.iugu.com/reference/metadados/">Documentação da API iugu</a></p>
 							'.gib_file_exists_check('/includes/hooks/gofasiuguboleto.php').'

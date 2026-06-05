@@ -1,26 +1,28 @@
-# Gofas iugu Boleto
+# Changelog
 
-Módulo de gateway de pagamento para WHMCS que integra geração e baixa de boletos bancários via API iugu. Desenvolvido pela Gofas Software.
+## [Unreleased](https://github.com/mauriciogofas/gofasiuguboleto/tree/HEAD)
 
-## Funcionalidades
+## [v1.2.3] - 2023-06-13
 
-- Geração de boletos via API iugu
-- Verificação e baixa automática de faturas pagas
-- Suporte a vencimento customizado
 
-## Requisitos
 
-- WHMCS 7.x ou superior
-- PHP 8.x
-- Conta iugu com API habilitada
-- API Token iugu
+## [v1.2.2] - 2023-05-20
 
-## Instalação
 
-1. Copiar `modules/gateways/` para o `modules/gateways/` do WHMCS
-2. Ativar em **Configurações > Formas de Pagamento**
-3. Informar API Token
 
-## Changelog
+## [v1.2.1] - 2023-04-10
 
-Ver [changelog.md](changelog.md).
+
+
+## [v1.2.0] - 2023-04-06
+
+:tada:
+
+## [v1.1.0] - 2023-04-02
+
+
+
+## [v1.0.0] - 2023-03-23
+
+
+

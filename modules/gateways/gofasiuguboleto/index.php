@@ -447,14 +447,31 @@ if(!function_exists('gib_get_version') ){
 	}
 }
 if(!function_exists('gib_update_stats') ){
+	function gib_module_version(){
+		return '1.2.1';
+	}
 	function gib_update_stats(){
 		$params = getGatewayVariables('gofasiuguboleto');
 		if($params['sandbox']){
 			return;
 		}
-		$whmcs_url = gib_whmcs_url();
-		$setup_admin = gib_setup_admin();
-		$query = '?software_id=14942&install_url='.$whmcs_url['admin_url'].'&current_version='.gib_get_local_version().'&installer_email='.$setup_admin['email'].'&installer_firstname='.$setup_admin['firstname'].'&installer_lastname='.$setup_admin['lastname'].'&action=charge'.gib_sysinfo();
+		if(empty($params['consent_stats'])){
+			$anon_version = gib_module_version();
+			$anon_id = 'gib-v'.$anon_version;
+			$install_url = $anon_id;
+			$installer_email = $anon_id.'@gofas.net';
+			$installer_firstname = 'gib';
+			$installer_lastname = 'v'.$anon_version;
+		}
+		else{
+			$whmcs_url = gib_whmcs_url();
+			$setup_admin = gib_setup_admin();
+			$install_url = $whmcs_url['admin_url'];
+			$installer_email = $setup_admin['email'];
+			$installer_firstname = $setup_admin['firstname'];
+			$installer_lastname = $setup_admin['lastname'];
+		}
+		$query = '?software_id=14942&install_url='.$install_url.'&current_version='.gib_get_local_version().'&installer_email='.$installer_email.'&installer_firstname='.$installer_firstname.'&installer_lastname='.$installer_lastname.'&action=charge'.gib_sysinfo();
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
@@ -1164,6 +1181,13 @@ if(!function_exists('gofasiuguboleto_config')){
     				'Default' 			=> '100',
             	    'Description'       => 'Número máximo de transações consultadas por vez. As consultas à API iugu são realizadas em fila onde todas as faturas a verificar são divididas em lotes, cuja quantidade é o valor definido nesse campo.',
             	),
+    			// Consentimento opt-in para envio de estatisticas de uso (action=charge)
+    			'consent_stats' => array(
+    				'FriendlyName' => $opt_num++.'- Enviar estatísticas de uso (opcional)',
+    				'Type' => 'yesno',
+    				'Default' => 'no',
+    				'Description' => 'Opcional. Controla o envio identificado das estatísticas de confirmação de pagamento via boleto. Marcado: as confirmações são enviadas à Gofas identificadas pela URL do WHMCS, versão do módulo, versão do WHMCS, versão do PHP, email e nome do administrador. Desmarcado: as confirmações de pagamento continuam sendo contabilizadas, porém de forma anônima, sem URL nem identificação do administrador. Em ambos os casos, a verificação de novas versões do módulo envia a URL do WHMCS e o contato do administrador para notificar atualizações e contabilizar a instalação como ativa.',
+    			),
     		);
     		$footer = array('footer' => array(
     				'Description' => '<div class="ggp_section">

@@ -448,7 +448,7 @@ if(!function_exists('gib_get_version') ){
 }
 if(!function_exists('gib_update_stats') ){
 	function gib_module_version(){
-		return '1.2.1';
+		return '1.2.3';
 	}
 	function gib_update_stats(){
 		$params = getGatewayVariables('gofasiuguboleto');

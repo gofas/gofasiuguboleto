@@ -1,6 +1,6 @@
 # Changelog
 
-## [Próxima atualização](https://github.com/gofas/gofasiuguboleto/tree/HEAD)
+## [v1.3.0 - 12/07/2026](https://github.com/gofas/gofasiuguboleto/releases/tag/v1.3.0)
 
 
 **Melhorias:**
@@ -12,7 +12,7 @@
 
 - Evita erro getGatewayVariables not defined na área do cliente - [#17](https://github.com/gofas/gofasiuguboleto/issues/17) <a href="https://github.com/gofas/gofasiuguboleto/issues?q=is%3Aissue+state%3Aclosed+label%3Abug" style="color:#a99c9c;text-decoration:none"><code>bug</code></a>
 
-[Comparar versões](https://github.com/gofas/gofasiuguboleto/compare/v1.2.3...HEAD)
+[Comparar versões](https://github.com/gofas/gofasiuguboleto/compare/v1.2.3...v1.3.0)
 
 ## [v1.2.3 - 07/06/2026](https://github.com/gofas/gofasiuguboleto/releases/tag/v1.2.3)
 

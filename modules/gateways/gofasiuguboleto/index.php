@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14942
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14687
- * @version		1.2.3
+ * @version		1.3.0
  */
 use WHMCS\Database\Capsule;
 use WHMCS\Aplication;
@@ -448,7 +448,7 @@ if(!function_exists('gib_get_version') ){
 }
 if(!function_exists('gib_update_stats') ){
 	function gib_module_version(){
-		return '1.2.3';
+		return '1.3.0';
 	}
 	function gib_update_stats(){
 		$params = getGatewayVariables('gofasiuguboleto');
@@ -1031,7 +1031,7 @@ if(!function_exists('gofasiuguboleto_MetaData')){
 if(!function_exists('gofasiuguboleto_config')){
     function gofasiuguboleto_config(){
     	if(stripos($_SERVER['REQUEST_URI'], '/configgateways.php')!==false){
-    		$module_version	= '1.2.3';
+    		$module_version	= '1.3.0';
     		$module_page	= '14942';
             $verify_install = gib_verify_install();
     		$whmcs_url = gib_whmcs_url();

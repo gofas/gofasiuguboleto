@@ -1,5 +1,14 @@
 # Changelog
 
+## [Próxima atualização](https://github.com/gofas/gofasiuguboleto/tree/HEAD)
+
+
+**Melhorias:**
+
+- readme: conteudo da pagina do site transferido e captura de configuracao - [#21](https://github.com/gofas/gofasiuguboleto/issues/21)
+
+[Comparar versões](https://github.com/gofas/gofasiuguboleto/compare/v1.3.0...HEAD)
+
 ## [v1.3.0 - 12/07/2026](https://github.com/gofas/gofasiuguboleto/releases/tag/v1.3.0)
 
 
